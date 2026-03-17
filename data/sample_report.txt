@@ -1,0 +1,14 @@
+Patient Name: John Doe
+Age: 45
+
+Diagnosis: Diabetes, Hypertension
+
+Medications:
+- Metformin
+- Amlodipine
+
+Lab Results:
+- Glucose: 240 mg/dL
+- Blood Pressure: 150/95
+
+Date: 2025-01-10
