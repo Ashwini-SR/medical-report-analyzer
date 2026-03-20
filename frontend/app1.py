@@ -7,16 +7,72 @@ st.set_page_config(page_title="Clinical AI", layout="wide")
 # ---------------- TITLE & STYLE ---------------- #
 st.markdown("""
 <style>
-html, body, [class*="css"] { font-family: 'Poppins', sans-serif; background-color: #0b1120; color: white; }
-.main-box { background: linear-gradient(145deg, #0f172a, #020617); padding: 30px; border-radius: 20px; border: 1px solid rgba(0, 255, 255, 0.2); text-align: center; margin-bottom: 20px; }
-.title { font-family: 'Orbitron', sans-serif; font-size: 48px; font-weight: 600; background: linear-gradient(90deg, #00c6ff, #0072ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.subtitle { font-size: 20px; color: #cbd5f5; }
-section[data-testid="stFileUploader"] { border: 2px dashed #00c6ff; border-radius: 12px; padding: 10px; background-color: #020617; }
+/* GLOBAL */
+html, body, [class*="css"] {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #0f172a;
+    color: #e2e8f0;
+}
+
+/* MAIN CONTAINER */
+.main-box {
+    background: #020617;
+    padding: 30px;
+    border-radius: 16px;
+    border: 1px solid #1e293b;
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+/* TITLE */
+.title {
+    font-size: 42px;
+    font-weight: 700;
+    color: #38bdf8;
+}
+
+/* SUBTITLE */
+.subtitle {
+    font-size: 18px;
+    color: #94a3b8;
+}
+
+/* FILE UPLOADER */
+section[data-testid="stFileUploader"] {
+    border: 2px dashed #38bdf8;
+    border-radius: 12px;
+    padding: 15px;
+    background-color: #020617;
+}
+
+/* CARDS */
+.card {
+    background: #020617;
+    padding: 20px;
+    border-radius: 14px;
+    border: 1px solid #1e293b;
+    margin-bottom: 15px;
+}
+
+/* HEADINGS */
+h1, h2, h3 {
+    color: #f1f5f9;
+}
+
+/* SUCCESS / WARNING COLORS */
+.stSuccess { color: #22c55e !important; }
+.stWarning { color: #facc15 !important; }
+.stError { color: #ef4444 !important; }
+
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="main-box"><div class="title">Clinical Intelligence Engine</div></div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle">Smart AI assistant for analyzing patient reports</div>', unsafe_allow_html=True)
+st.markdown("""
+<div class="main-box">
+    <div class="title"> Clinical Intelligence Engine</div>
+    <div class="subtitle">AI-powered analysis of patient reports</div>
+</div>
+""", unsafe_allow_html=True)
 st.caption("Built for ET Gen AI Hackathon • Clinical Decision Support System")
 st.markdown("---")
 
@@ -44,17 +100,11 @@ if uploaded_file is not None:
     with st.spinner("🤖 AI analyzing report..."):
         data = call_backend(uploaded_file)
 
-    if data is None:
-        st.warning("❌ Backend failed to process report. Using dummy data for demo.")
-        data = {
-            "summary": "Dummy patient summary",
-            "risk": "Low",
-            "insights": ["Bilirubin Total: Normal", "ALT: Normal"],
-            "extracted": {"Bilirubin Total": "0.5", "ALT": "22.3"},
-            "explanation": "Disease prediction: Healthy"
-        }
+    if data is None or "error" in data:
+        st.error(data["error"] if data and "error" in data else "Backend failed")
+        st.stop()
 
-    st.success("🎉 Analysis complete!")
+    st.success(" Analysis complete!")
     st.markdown("---")
 
     # ---------------- DISPLAY COLUMNS ---------------- #
@@ -77,13 +127,26 @@ if uploaded_file is not None:
         st.info(f"{len(data['extracted'])} Checked")
 
     st.markdown("---")
-    st.subheader("Patient Summary")
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.subheader("🧠 Patient Summary")
     st.write(data["summary"])
+    st.markdown('</div>', unsafe_allow_html=True)
 
     st.subheader("📊 Key Insights")
     for insight in data["insights"]:
-        st.write(f"✔ {insight}")
+        if "High" in insight:
+            st.error(f"🔴 {insight}")
+        elif "Low" in insight:
+            st.warning(f"🟡 {insight}")
+        else:
+            st.success(f"🟢 {insight}")
+    import pandas as pd
 
+    if "timeline" in data:
+        st.subheader("📈 Report Trend")
+
+        df = pd.DataFrame(data["timeline"])
+        st.line_chart(df.set_index("test"))
     st.subheader("📄 Extracted Report Values")
     for key, value in data["extracted"].items():
         if key.lower() in ["glucose", "cholesterol"]:
@@ -107,4 +170,3 @@ else:
 # ---------------- FOOTER ---------------- #
 st.markdown("---")
 st.caption("🚀 Designed to reduce doctor workload and improve patient safety")
-st.info("💡 This demo uses simulated AI results. Backend integration will provide real-time analysis.")
