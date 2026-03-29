@@ -1,4 +1,4 @@
-README.md
+
 # Clinical Intelligence Engine
 AI-powered medical report analyzer using OCR, rule-based NLP, and clinical risk scoring.
 
