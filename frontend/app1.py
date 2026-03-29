@@ -330,7 +330,7 @@ AI Decision Support System
 """)
 
 page = st.sidebar.radio(
-    "",
+    "Navigation",
     [
         "Upload Report",
         "Patient Summary",
